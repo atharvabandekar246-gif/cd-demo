@@ -25,3 +25,14 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/flask-demo:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/flask-demo:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy and smoke test
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/flask-demo:${{ github.sha }}
+          docker run -d -p 5000:5000 --name web ${{ secrets.DOCKERHUB_USERNAME }}/flask-demo:${{ github.sha }}
+          sleep 5
+          curl -f http://localhost:5000
